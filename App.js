@@ -3,6 +3,7 @@ import { collection, addDoc } from 'firebase/firestore';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, Button, FlatList } from 'react-native';
+import { useCollection } from 'react-firebase-hooks/firestore'
 
 /** When adding navigation to the project run these scrips: 
  * npm i @react-navigation/native
@@ -39,6 +40,10 @@ const ListPage = ({navigation, route}) => { //route to send data, navigation kan
 
   const [notes, setNotes] = useState([])
 
+  const [values, loading, error] = useCollection(collection(database, "notes"))
+
+  const data = values?.docs.map((doc) => ({...doc.data(), id: doc.id})) //for hvert element i collection bliver mappet værdien fra noget til andet. Her skal vi have et ekstra id
+
   //const staticNotes = [{key: 1, name: 'mo'}, {key:2, name: 'stacks'}]
 
   async function addNoteToDb(newNoteToDb) {
@@ -67,8 +72,8 @@ const ListPage = ({navigation, route}) => { //route to send data, navigation kan
       <Button title='Add note' onPress={addNote}></Button>
       
       <FlatList  
-      data={notes}
-      renderItem={(note) => <Button title={note.item.name} onPress={() => goTODetailPage(note.item)}/>}
+      data={data}
+      renderItem={(note) => <Button title={note.item.text} onPress={() => goTODetailPage(note.item)}/>}
       />
       <StatusBar style="auto" />
     </View>
@@ -80,7 +85,7 @@ const DetailPage = ({navigation, route}) => {
   const message = route.params?.message // '?' = denne linje skal ikke køre med mindre params har en værdig
   return(
     <View>
-      <Text>{message.name}</Text>
+      <Text>{message.text}</Text>
     </View>
   )
 }
