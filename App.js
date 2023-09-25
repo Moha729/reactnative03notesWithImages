@@ -1,8 +1,8 @@
 import { app, database } from './firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Button, FlatList } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Button, FlatList, Image, TouchableOpacity } from 'react-native';
 import { useCollection } from 'react-firebase-hooks/firestore'
 
 /** When adding navigation to the project run these scrips: 
@@ -65,15 +65,32 @@ const ListPage = ({navigation, route}) => { //route to send data, navigation kan
     navigation.navigate('DetailPage', {message:item})
     //alert({message:item.name})
   }
+
+  async function deleteNote(id){
+    //alert(`You successfully deleted note with id: ${id}`);
+    await deleteDoc(doc(database, "notes", id))
+  }
   return (
     <View style={styles.container}>
+
       <Text>Welcome to your note-app</Text>
       <TextInput style={styles.textInput} onChangeText={(txt) => setText(txt)} />
       <Button title='Add note' onPress={addNote}></Button>
       
       <FlatList  
       data={data}
-      renderItem={(note) => <Button title={note.item.text} onPress={() => goTODetailPage(note.item)}/>}
+      renderItem={(note) => 
+      <>
+      <Button title={note.item.text} onPress={() => goTODetailPage(note.item)} />
+      <TouchableOpacity onPress={() => deleteNote(note.item.id)}>
+      <Image
+        style={{ width: 30, height: 30 }}
+        source={{ uri: 'https://img.icons8.com/quill/100/filled-trash.png' }}
+        alt="delete"
+      />
+      </TouchableOpacity>
+      </>
+    }
       />
       <StatusBar style="auto" />
     </View>
