@@ -1,3 +1,5 @@
+import { app, database } from './firebase';
+import { collection, addDoc } from 'firebase/firestore';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, Button, FlatList } from 'react-native';
@@ -14,6 +16,7 @@ export default function App() {
 
   const Stack = createNativeStackNavigator() //opretter et object, til at lægge en side på en anden side når man navigere
 
+  alert(JSON.stringify(database, null, 4))
 
   return (
     <NavigationContainer>
