@@ -16,7 +16,7 @@ export default function App() {
 
   const Stack = createNativeStackNavigator() //opretter et object, til at lægge en side på en anden side når man navigere
 
-  alert(JSON.stringify(database, null, 4))
+  //alert(JSON.stringify(database, null, 4))
 
   return (
     <NavigationContainer>
@@ -41,12 +41,19 @@ const ListPage = ({navigation, route}) => { //route to send data, navigation kan
 
   //const staticNotes = [{key: 1, name: 'mo'}, {key:2, name: 'stacks'}]
 
+  async function addNoteToDb(newNoteToDb) {
+    await addDoc(collection(database, "notes"), 
+    {
+      text: newNoteToDb
+    })
+  }
 
-  function addNote(item){
+  async function addNote(item){
     //alert('you typed ' + text)
     setNotes(
       [...notes, {key:notes.length, name: text}]
     )
+    await addNoteToDb(text)
   }
 
   function goTODetailPage (item) {
