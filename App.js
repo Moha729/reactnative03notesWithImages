@@ -1,5 +1,5 @@
 import { app, database } from './firebase';
-import { collection, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, Button, FlatList, Image, TouchableOpacity } from 'react-native';
@@ -17,7 +17,7 @@ export default function App() {
 
   const Stack = createNativeStackNavigator() //opretter et object, til at lægge en side på en anden side når man navigere
 
-  //alert(JSON.stringify(database, null, 4))
+  console.log("Connection to database is: "+JSON.stringify(database, null, 4))
 
   return (
     <NavigationContainer>
@@ -38,9 +38,11 @@ export default function App() {
 const ListPage = ({navigation, route}) => { //route to send data, navigation kan kalde på navigate
   const [text, setText] = useState('')
 
-  const [notes, setNotes] = useState([])
+  //const [notes, setNotes] = useState([])
 
   const [values, loading, error] = useCollection(collection(database, "notes"))
+
+  const [editObject, setEditObject] = useState(null)
 
   const data = values?.docs.map((doc) => ({...doc.data(), id: doc.id})) //for hvert element i collection bliver mappet værdien fra noget til andet. Her skal vi have et ekstra id
 
@@ -55,9 +57,9 @@ const ListPage = ({navigation, route}) => { //route to send data, navigation kan
 
   async function addNote(item){
     //alert('you typed ' + text)
-    setNotes(
+/*     setNotes(
       [...notes, {key:notes.length, name: text}]
-    )
+    ) */
     await addNoteToDb(text)
   }
 
@@ -70,8 +72,27 @@ const ListPage = ({navigation, route}) => { //route to send data, navigation kan
     //alert(`You successfully deleted note with id: ${id}`);
     await deleteDoc(doc(database, "notes", id))
   }
+
+  function viewUpdateDialog(item){
+    setEditObject(item)
+  }
+
+  async function saveUpdate(){
+    // kalde firebase
+    await updateDoc(doc(database, "notes", editObject.id), {
+      text: text
+    })
+    setText("")
+    setEditObject(null)
+  }
+
   return (
     <View style={styles.container}>
+
+      {editObject && <View>
+        <TextInput style={styles.textInput}  defaultValue={editObject.text} onChangeText={(txt) => setText(txt)} />
+        <Text onPress={saveUpdate}>Save</Text>
+      </View>}
 
       <Text>Welcome to your note-app</Text>
       <TextInput style={styles.textInput} onChangeText={(txt) => setText(txt)} />
@@ -88,6 +109,13 @@ const ListPage = ({navigation, route}) => { //route to send data, navigation kan
         source={{ uri: 'https://img.icons8.com/quill/100/filled-trash.png' }}
         alt="delete"
       />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => viewUpdateDialog(note.item)}>
+        <Image 
+          style={{ width: 30, height: 30 }}
+          source={{ uri: 'https://img.icons8.com/wired/64/create-new.png' }}
+          alt="update"
+        />
       </TouchableOpacity>
       </>
     }
